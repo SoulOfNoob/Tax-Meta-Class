@@ -111,7 +111,7 @@ class Tax_Meta_Class {
     $this->add_missed_values();
     if (isset($meta_box['use_with_theme'])){
       if ($meta_box['use_with_theme'] === true){
-        $this->SelfPath = get_template_directory_uri() . '/Tax-meta-class';
+        $this->SelfPath = get_template_directory_uri()/* . '/Tax-meta-class'*/;
       }elseif($meta_box['use_with_theme'] === false){
         $this->SelfPath = plugins_url( 'Tax-meta-class', plugin_basename( dirname( __FILE__ ) ) );
       }else{
@@ -157,9 +157,9 @@ class Tax_Meta_Class {
       $this->check_field_date();
       $this->check_field_time();
       // Enqueue Meta Box Style
-      wp_enqueue_style( 'tax-meta-clss', $plugin_path . '/css/Tax-meta-class.css' );
+      wp_enqueue_style( 'tax-meta-clss', $plugin_path.'/css/Tax-meta-class.css' );
       // Enqueue Meta Box Scripts
-      wp_enqueue_script( 'tax-meta-clss', $plugin_path . '/js/tax-meta-clss.js', array( 'jquery' ), null, true );
+      wp_enqueue_script( 'tax-meta-clss', $plugin_path.'/js/tax-meta-clss.js', array( 'jquery' ), null, true );
     
     }
     
@@ -432,7 +432,7 @@ class Tax_Meta_Class {
       // Enqueu JQuery UI, use proper version.
       wp_enqueue_style( 'tmc-jquery-ui-css', 'https://ajax.googleapis.com/ajax/libs/jqueryui/' . $this->get_jqueryui_ver() . '/themes/base/jquery-ui.css', array(),false,true);
       wp_enqueue_script( 'tmc-jquery-ui', 'https://ajax.googleapis.com/ajax/libs/jqueryui/' . $this->get_jqueryui_ver() . '/jquery-ui.min.js', array( 'jquery' ),false,true );
-      wp_enqueue_script( 'at-timepicker', 'https://github.com/trentrichardson/jQuery-Timepicker-Addon/raw/master/jquery-ui-timepicker-addon.js', array( 'tmc-jquery-ui' ),false,true );
+      wp_enqueue_script( 'at-timepicker', $plugin_path.'/jquery-ui-timepicker-addon.js', array( 'tmc-jquery-ui' ),false,true );
     
     }
     
@@ -500,6 +500,7 @@ class Tax_Meta_Class {
     
     wp_nonce_field( basename(__FILE__), 'tax_meta_class_nonce' );
     
+    wp_editor( '', 'hide_me_field', array( 'editor_css' => '<style>#wp-hide_me_field-wrap{display:none;}</style>', 'tinymce' => true) );
     foreach ( $this->_fields as $field ) {
     $multiple = isset($field['multiple'])? $field['multiple'] : false;
       $meta = $this->get_tax_meta( $term_id, $field['id'], !$multiple );
@@ -553,8 +554,9 @@ class Tax_Meta_Class {
           if (!$field['inline']){
             echo '<tr>';
           }
+          $f['is_in_repeater_field']=true;
           if ($f['type'] == 'wysiwyg')
-            call_user_func ( array( $this, 'show_field_' . $f['type'] ), $f, is_array($m)? $m : stripslashes($m),true);
+            call_user_func ( array( $this, 'show_field_' . $f['type'] ), $f, is_array($m)? $m : stripslashes($m)/*, true*/);
           else
             call_user_func ( array( $this, 'show_field_' . $f['type'] ), $f, is_array($m)? $m : stripslashes($m));
             
@@ -583,7 +585,7 @@ class Tax_Meta_Class {
         $c = $c + 1;
         
         }
-        $this->show_field_end( $field, $meta );
+        //$this->show_field_end( $field, $meta );
       }
 
     echo '<img src="';
@@ -608,6 +610,7 @@ class Tax_Meta_Class {
       if (!$field['inline']){
         echo '<tr>';
       }
+      $f['is_in_repeater_field']=true;
       if ($f['type'] == 'wysiwyg')
             call_user_func ( array( $this, 'show_field_' . $f['type'] ), $f, '',true);
           else
@@ -666,24 +669,46 @@ class Tax_Meta_Class {
    * @access public
    */
   public function show_field_begin( $field, $meta) {
-    if (isset($field['group'])){
-      if ($field['group'] == "start"){
-        echo "<td class='at-field'>";
-      }
+    if ($field['is_in_repeater_field']==true){
+        if (isset($field['group'])){
+          if ($field['group'] == "start"){
+            echo "<td class='at-field'>";
+          }
+        }else{
+          if ($this->_form_type == 'edit'){
+            echo '<td style="vertical-align: top;">';
+          }else{
+            echo '<td><div class="form-field">';
+          }
+        }
+        if ( $field['name'] != '' || $field['name'] != FALSE ) {
+          //echo "<div class='at-label'>";
+            echo "<label style=\"font-weight: bold;\" for='{$field['id']}'>{$field['name']}</label>";
+          //echo "</div>";
+        }
+        if ($this->_form_type == 'edit'){
+            echo '<br /><br />';
+        }
     }else{
-      if ($this->_form_type == 'edit'){
-        echo '<th valign="top" scope="row">';
-      }else{
-        echo '<td><div class="form-field">';
-      }
-    }
-    if ( $field['name'] != '' || $field['name'] != FALSE ) {
-      //echo "<div class='at-label'>";
-        echo "<label for='{$field['id']}'>{$field['name']}</label>";
-      //echo "</div>";
-    }
-    if ($this->_form_type == 'edit'){
-        echo '</th><td>';
+        if (isset($field['group'])){
+          if ($field['group'] == "start"){
+            echo "<td class='at-field'>";
+          }
+        }else{
+          if ($this->_form_type == 'edit'){
+            echo '<th valign="top" scope="row">';
+          }else{
+            echo '<td><div class="form-field">';
+          }
+        }
+        if ( $field['name'] != '' || $field['name'] != FALSE ) {
+          //echo "<div class='at-label'>";
+            echo "<label for='{$field['id']}'>{$field['name']}</label>";
+          //echo "</div>";
+        }
+        if ($this->_form_type == 'edit'){
+            echo '</th><td>';
+        }
     }
   }
   
@@ -696,30 +721,58 @@ class Tax_Meta_Class {
    * @access public 
    */
   public function show_field_end( $field, $meta=NULL ,$group = false) {
-    if (isset($field['group'])){
-      if ($group == 'end'){
-        if ( isset($field['desc']) && $field['desc'] != '' ) {
-          echo "<div class='desc-field'>{$field['desc']}</div></td>";
-        } else {
-          echo "</td>";
-        }
-      }else {
-        if ( isset($field['desc']) && $field['desc'] != '' ) {
-          echo "<div class='desc-field'>{$field['desc']}</div><br/>";  
+    if ($field['is_in_repeater_field']==true){
+        if (isset($field['group'])){
+          if ($group == 'end'){
+            if ( isset($field['desc']) && $field['desc'] != '' ) {
+              echo "<div class='desc-field'>{$field['desc']}</div></td></tr>";
+            } else {
+              echo "</td></tr>";
+            }
+          }else {
+            if ( isset($field['desc']) && $field['desc'] != '' ) {
+              echo "<div class='desc-field'>{$field['desc']}</div><br/>";  
+            }else{
+              echo '<br/>';
+            }  
+          }    
         }else{
-          echo '<br/>';
-        }  
-      }    
+          if ( isset($field['desc']) && $field['desc'] != '' ) {
+            echo "<div class='desc-field'>{$field['desc']}</div>";
+          }
+          if ($this->_form_type == 'edit'){
+            echo '<td>';  
+          }else{
+            echo '<td></div>';
+          }
+        }
     }else{
-      if ( isset($field['desc']) && $field['desc'] != '' ) {
-        echo "<div class='desc-field'>{$field['desc']}</div>";
-      }
-      if ($this->_form_type == 'edit'){
-        echo '<td>';  
-      }else{
-        echo '<td></div>';
-      }
+        if (isset($field['group'])){
+          if ($group == 'end'){
+            if ( isset($field['desc']) && $field['desc'] != '' ) {
+              echo "<div class='desc-field'>{$field['desc']}</div></td>";
+            } else {
+              echo "</td>";
+            }
+          }else {
+            if ( isset($field['desc']) && $field['desc'] != '' ) {
+              echo "<div class='desc-field'>{$field['desc']}</div><br/>";  
+            }else{
+              echo '<br/>';
+            }  
+          }    
+        }else{
+          if ( isset($field['desc']) && $field['desc'] != '' ) {
+            echo "<div class='desc-field'>{$field['desc']}</div>";
+          }
+          if ($this->_form_type == 'edit'){
+            echo '<td>';  
+          }else{
+            echo '<td></div>';
+          }
+        }
     }
+
   }
   
   /**
@@ -848,11 +901,11 @@ class Tax_Meta_Class {
     // Add TinyMCE script for WP version < 3.3
     global $wp_version;
 
-    if ( version_compare( $wp_version, '3.2.1' ) < 1 || $in_repeater) {
+    if ($in_repeater) {
       echo "<textarea style='{$field['style']}' class='at-wysiwyg theEditor large-text' name='{$field['id']}' id='{$field['id']}' cols='60' rows='10'>{$meta}</textarea>";
     }else{
       // Use new wp_editor() since WP 3.3
-      wp_editor( stripslashes(html_entity_decode($meta)), $field['id'], array( 'editor_class' => 'at-wysiwyg' ) );
+      wp_editor( stripslashes(html_entity_decode($meta)), $field['id'], array( 'editor_class' => 'at-wysiwyg', 'tinymce' => true) );
     }
     $this->show_field_end( $field, $meta );
   }
@@ -914,7 +967,7 @@ class Tax_Meta_Class {
       $meta = $meta[0];
     }
     if (is_array($meta) && isset($meta['src']) && $meta['src'] != ''){
-      $html .= "<span class='mupload_img_holder'><img src='".$meta['src']."' style='height: 150px;width: 150px;' /></span>";
+      $html .= "<span class='mupload_img_holder'><img src='".$meta['src']."' style='width: 300px;' /></span>";
       $html .= "<input type='hidden' name='".$field['id']."[id]' id='".$field['id']."[id]' value='".$meta['id']."' />";
       $html .= "<input type='hidden' name='".$field['id']."[src]' id='".$field['id']."[src]' value='".$meta['src']."' />";
       $html .= "<input class='at-delete_image_button' type='button' rel='".$field['id']."' value='Delete Image' />";

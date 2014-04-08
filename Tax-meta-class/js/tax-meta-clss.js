@@ -12,7 +12,7 @@
 
 var $ =jQuery.noConflict();
 function update_repeater_fields(){
-    
+    console.log(tinyMCE);
     /**
      * WysiWyg editor
      *
@@ -20,6 +20,7 @@ function update_repeater_fields(){
      */
     $(".theEditor").each(function(){
       if ( typeof( tinyMCE ) == "object" && typeof( tinyMCE.execCommand ) == "function" ) {
+          
       tinyMCE.execCommand("mceAddControl", false, $(this).attr('id'));
       }
     });
