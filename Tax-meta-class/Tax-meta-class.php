@@ -535,11 +535,19 @@ class Tax_Meta_Class {
       if (count($meta) > 0 && is_array($meta) ){
          foreach ($meta as $me){
            //for labling toggles
-           $mmm =  ($me[$field])? $me[$field['fields'][0]['id']]: "";
-           echo '<div class="at-repater-block">'.$mmm.'<br/><table class="repeater-table" style="display: none;">';
-           if ($field['inline']){
-             echo '<tr class="at-inline" VALIGN="top">';
-           }
+            //$mmm =  ($me[$field])? $me[$field['fields'][0]['id']]: "";
+           $mm = $me[$field['fields'][0]['id']];
+           if($mm){ 
+              if (is_array($mm)){
+                  //$re_title = '';
+              }else{
+                  $re_title = '<span>'.$mm.'</span><br/>';
+              }
+              echo '<div class="at-repater-block">'.$re_title.'<table class="repeater-table" style="display: none;">';
+              if ($field['inline']){
+                echo '<tr class="at-inline" VALIGN="top">';
+              }
+           } 
         foreach ($field['fields'] as $f){
           //reset var $id for repeater
           $id = '';
